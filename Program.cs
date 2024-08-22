@@ -14,36 +14,42 @@
 
 
 
+using System.ComponentModel;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Web.Script.Serialization;
 
 namespace ps_inoa
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            string QUERY_URL = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo"
-            Uri queryUri = new Uri(QUERY_URL);
+            //Numero limite de chamadas da API por DIA
+            int totalCalls = 25;
 
-            using (WebClient client = new WebClient())
+            //Intervalo calculado entre cada chamda da API => 24h*60min/25calls = X minutos = X*60000 millisegundos
+            double intervalMilisseconds = 1 * 60000;
+
+            Monitora monitor = new Monitora();
+
+           
+            for (int i = 0; i < totalCalls; i++)
             {
-                // -------------------------------------------------------------------------
-                // if using .NET Framework (System.Web.Script.Serialization)
+                dynamic item = await monitor.MonitoraAtivo(args[0], Double.Parse(args[1]), Double.Parse(args[2]));
+                Console.WriteLine($"API call {i + 1}/{totalCalls} completed. Waiting for {intervalMilisseconds} minutes.");
+                Console.WriteLine(item);
 
-                JavaScriptSerializer js = new JavaScriptSerializer();
-                dynamic json_data = js.Deserialize(client.DownloadString(queryUri), typeof(object));
+                if (i < totalCalls - 1)
+                {
+                    await Task.Delay((int)Math.Ceiling(intervalMilisseconds)); //valor milisegundos;
+                }
 
-                // -------------------------------------------------------------------------
-                // if using .NET Core (System.Text.Json)
-                // using .NET Core libraries to parse JSON is more complicated. For an informative blog post
-                // https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/
-
-                dynamic json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(client.DownloadString(queryUri));
-
-
-
+               
             }
+
+
+        }
+            
     }
 }

@@ -2,7 +2,7 @@
   "profiles": {
     "ps-inoa": {
       "commandName": "Project",
-      "commandLineArgs": "ATIVO STOCK STOCK\r\n"
+      "commandLineArgs": "PETR4.SA 22,67 22,59 \r\n"
     }
   }
 }
