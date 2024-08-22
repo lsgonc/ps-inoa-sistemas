@@ -29,10 +29,12 @@ namespace ps_inoa
             int totalCalls = 25;
 
             //Intervalo calculado entre cada chamda da API => 24h*60min/25calls = X minutos = X*60000 millisegundos
-            double intervalMilisseconds = 1 * 60000;
+            double intervalMilisseconds = 56.7 * 60000;
 
             Monitora monitor = new Monitora();
+            Alerter mailer = new Alerter();
 
+            mailer.AlertaEmail("lucasscgoncalves@gmail.com");
            
             for (int i = 0; i < totalCalls; i++)
             {
