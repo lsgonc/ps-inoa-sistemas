@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ps-inoa": {
+      "commandName": "Project",
+      "commandLineArgs": "ATIVO STOCK STOCK\r\n"
+    }
+  }
+}
