@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ps_inoa
@@ -11,23 +13,62 @@ namespace ps_inoa
     internal class Alerter
     {
 
-        public void AlertaEmail(string to)
+        public void AlertaEmail(string configFile)
         {
-            MailMessage message = new MailMessage("monitoradorAcoes@inoa.com.br", to);
+            
+            try
+            {
+                //Carrega as informações de config através de um arquivo Json
+                dynamic configs = LoadConfig(configFile);
 
-            message.Subject = "Testando email";
-            message.Body = @"Yeah buddy!";
 
-            SmtpClient client = new SmtpClient();
-            // Credentials are necessary if the server requires the client
-            // to authenticate before it will send email on the client's behalf.
-            client.Host = "smtp.gmail.com";
-            client.Port = 587;
-            client.EnableSsl = true;
-            client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential("lucasscgoncalves@gmail.com", "Lucas.sciarra123");
-            client.Send(message);        
+                //Tenta ler todas as propriedades necessarias para o envio do email
+                configs.TryGetProperty("to", out JsonElement jsonTo);
+                configs.TryGetProperty("host", out JsonElement jsonHost);
+                configs.TryGetProperty("port", out JsonElement jsonPort);
+                configs.TryGetProperty("credentials", out JsonElement jsonCredentials);
+                jsonCredentials.TryGetProperty("username", out JsonElement jsonUsername);
+                jsonCredentials.TryGetProperty("password", out JsonElement jsonPassword);
+
+                MailMessage message = new MailMessage("monitoradorAcoes@inoa.com.br", jsonTo.ToString());
+
+
+                message.Subject = "MONITORADOR DE ATIVOS - ALERTA";
+                message.Body = "Toma";
+
+                SmtpClient client = new SmtpClient();
+                // Credentials are necessary if the server requires the client
+                // to authenticate before it will send email on the client's behalf.
+                client.Host = jsonHost.ToString();
+                client.Port = int.Parse(jsonPort.ToString());
+                client.EnableSsl = true;
+                client.UseDefaultCredentials = false;
+                client.Credentials = new NetworkCredential(jsonUsername.ToString(), jsonPassword.ToString());
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao ler arquivo de configurações!");
+            }
+
+
+
+        }
         
+        //Lê um arquivo JSON e retorna os dados em um objeto
+        public dynamic LoadConfig(string configFile)
+        {
+           
+            StreamReader streamReader = new StreamReader(Directory.GetCurrentDirectory() + "/" + configFile);
+
+            string json = streamReader.ReadToEnd();
+
+            dynamic items = JsonSerializer.Deserialize<object>(json);
+
+            
+            return items;
+
         }
 
     }
