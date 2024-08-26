@@ -13,7 +13,7 @@ namespace ps_inoa
     internal class Alerta
     {
 
-        public void AlertaEmail(string configFile, string msg)
+        public void EnviarAlertaEmail(string configFile, string msg)
         {
             
             try

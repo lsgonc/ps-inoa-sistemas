@@ -14,10 +14,10 @@ namespace ps_inoa
         private readonly HttpClient httpClient = new HttpClient();
         private readonly Alerta alerta = new Alerta();
 
-        public async Task<string> VerificarEAlertarPrecoAtivo(string ativo, double minimo, double maximo)
+        public async Task<string> MonitoraAtivo(string ativo, double minimo, double maximo)
         {
             var url = $"{UrlBase}query?function=GLOBAL_QUOTE&symbol={ativo}&apikey={ChaveApi}";
-            Console.WriteLine($"Buscando dados da API para a URI: {url}");
+            Console.WriteLine($"Buscando dados da API: {url}");
 
             try
             {

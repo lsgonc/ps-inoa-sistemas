@@ -32,8 +32,8 @@ namespace ps_inoa
             //Intervalo calculado entre cada chamda da API => 24h*60min/25calls = X minutos = X*60000 millisegundos
             double intervalMilisseconds = 56.7 * 60000;
 
-            Monitora monitor = new Monitora();
-            Alerter mailer = new Alerter();
+            Monitoramento monitor = new Monitoramento();
+            Alerta alertaEmail = new Alerta();
 
             //Pega os valores minimo e maximo digitados pelo usuário como double
             double value1 = double.Parse(args[1]);
