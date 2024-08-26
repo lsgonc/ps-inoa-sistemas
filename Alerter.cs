@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ps_inoa
 {
-    internal class Alerter
+    internal class Alerta
     {
 
         public void AlertaEmail(string configFile, string msg)

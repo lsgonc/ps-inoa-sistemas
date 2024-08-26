@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -9,70 +7,60 @@ using System.Threading.Tasks;
 
 namespace ps_inoa
 {
-    internal class Monitora
+    internal class Monitoramento
     {
+        private const string ChaveApi = "CXY8MJYK89SY2EDL";
+        private const string UrlBase = "https://www.alphavantage.co/";
+        private readonly HttpClient httpClient = new HttpClient();
+        private readonly Alerta alerta = new Alerta();
 
-        private const string ApiKey = "CXY8MJYK89SY2EDL";
-        private const string BaseUrl = "https://www.alphavantage.co/";
-        private HttpClient httpClient = new HttpClient();
-        private Alerter alerter = new Alerter();
-
-
-        public async Task<String> MonitoraAtivo(string ativo, double min, double max)
+        public async Task<string> VerificarEAlertarPrecoAtivo(string ativo, double minimo, double maximo)
         {
-
-            var url = $"{BaseUrl}query?function=GLOBAL_QUOTE&symbol={ativo}&apikey={ApiKey}";
+            var url = $"{UrlBase}query?function=GLOBAL_QUOTE&symbol={ativo}&apikey={ChaveApi}";
+            Console.WriteLine($"Buscando dados da API para a URI: {url}");
 
             try
             {
-                var response = await httpClient.GetFromJsonAsync<dynamic>(new Uri(url));
+                var resposta = await httpClient.GetFromJsonAsync<JsonElement>(new Uri(url));
 
-                if (response.TryGetProperty("Global Quote", out JsonElement globalQuote))
+                if (resposta.TryGetProperty("Global Quote", out JsonElement cotacaoGlobal) &&
+                    cotacaoGlobal.TryGetProperty("05. price", out JsonElement elementoPreco))
                 {
-                    if (globalQuote.TryGetProperty("05. price", out JsonElement priceElement))
-                    {
-                        var priceString = priceElement.GetString(); // Pega o valor como
-                        Console.WriteLine(priceString);                                    
-                        
-                        //Pega o decimal usando o "." como separador já que a API retorna os dados nesse formato
-                        if (decimal.TryParse(priceString,CultureInfo.InvariantCulture , out decimal price)) // Tenta fazer o parse para decimal
-                        {
-                            Console.WriteLine("Puxando dados da API Alpha Vantage, a partir da URI: " + url);
-                            Console.WriteLine("Preco da ação no momento: " + (double)price);
-                            Console.WriteLine("Seus valores basais: " + min + " " + max);
+                    var precoString = elementoPreco.GetString();
+                    Console.WriteLine($"Preço atual do ativo: {precoString}");
 
-                            if (price < (decimal)min)
-                            {
-                                alerter.AlertaEmail("smtp_configs.json", "O preço do ativo está baixo, voce deve compra-lo!");
-                            }
-                            else if (price > (decimal)max)
-                            {
-                                alerter.AlertaEmail("smtp_configs.json", "O preço do ativo está baixo, voce deve compra-lo!");
-                            }
-
-                            return price < (decimal)min ? "Comprar" :
-                                   price > (decimal)max ? "Vender" : "Aguardar";
-                        }
-                        else
-                        {
-                            return "Não foi possível converter o preço para um decimal!";
-                        }
-                    }
-                    else
+                    if (decimal.TryParse(precoString, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal preco))
                     {
-                        return "Erro ao ler dados da API";
+                        return ProcessarPrecoAtivo(preco, minimo, maximo);
                     }
 
-                } else
-                {
-                    return "Erro ao ler dados da API";
+                    return "Erro: Não foi possível converter o preço para um decimal!";
                 }
+
+                return "Erro: Não foi possível recuperar os dados do preço do ativo da API!";
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao ler cotação do ativo!", ex);
+                Console.WriteLine($"Ocorreu uma exceção: {ex.Message}");
+                throw new Exception("Erro ao recuperar o preço do ativo!", ex);
+            }
+        }
+
+        private string ProcessarPrecoAtivo(decimal preco, double minimo, double maximo)
+        {
+            string decisao = preco < (decimal)minimo ? "Comprar" :
+                             preco > (decimal)maximo ? "Vender" : "Aguardar";
+
+            if (decisao == "Comprar")
+            {
+                alerta.EnviarAlertaEmail("smtp_configs.json", "O preço do ativo está baixo, você deve comprá-lo!");
+            }
+            else if (decisao == "Vender")
+            {
+                alerta.EnviarAlertaEmail("smtp_configs.json", "O preço do ativo está alto, você deve vendê-lo!");
             }
 
+            return decisao;
         }
     }
 }
