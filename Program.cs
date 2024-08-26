@@ -43,29 +43,27 @@ namespace ps_inoa
             double min = Math.Min(value1, value2);
             double max = Math.Max(value1, value2);
 
-            mailer.AlertaEmail("lucas@gmail.com","smtp_configs.json");
+            for (int i = 0; i < totalCalls; i++)
+            {
+                //Chama a função para monitorar o ativo escolhido
+                dynamic item = await monitor.MonitoraAtivo(args[0], min, max);
 
 
+                Console.WriteLine("Ação a ser tomada: " + item.ToLower() );
 
-            //for (int i = 0; i < totalCalls; i++)
-            //{
-            //    //Chama a função para monitorar o ativo escolhido
-            //    dynamic item = await monitor.MonitoraAtivo(args[0], min, max);
+                Console.WriteLine($"API call {i + 1}/{totalCalls} completed. Waiting for {intervalMilisseconds} minutes.");
 
-                
-            //    Console.WriteLine($"API call {i + 1}/{totalCalls} completed. Waiting for {intervalMilisseconds} minutes.");
-                
 
-            //    if (i < totalCalls - 1)
-            //    {
-            //        await Task.Delay((int)Math.Ceiling(intervalMilisseconds)); //valor milisegundos;
-            //    }
+                if (i < totalCalls - 1)
+                {
+                    await Task.Delay((int)Math.Ceiling(intervalMilisseconds)); //valor milisegundos;
+                }
 
-               
-            //}
+
+            }
 
 
         }
-            
+
     }
 }

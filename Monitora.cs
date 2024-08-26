@@ -15,6 +15,7 @@ namespace ps_inoa
         private const string ApiKey = "CXY8MJYK89SY2EDL";
         private const string BaseUrl = "https://www.alphavantage.co/";
         private HttpClient httpClient = new HttpClient();
+        private Alerter alerter = new Alerter();
 
 
         public async Task<String> MonitoraAtivo(string ativo, double min, double max)
@@ -42,11 +43,11 @@ namespace ps_inoa
 
                             if (price < (decimal)min)
                             {
-                                Console.WriteLine("Disparando um email para comprar ação");
+                                alerter.AlertaEmail("smtp_configs.json", "O preço do ativo está baixo, voce deve compra-lo!");
                             }
                             else if (price > (decimal)max)
                             {
-                                Console.WriteLine("Disparando um email para vender ação!");
+                                alerter.AlertaEmail("smtp_configs.json", "O preço do ativo está baixo, voce deve compra-lo!");
                             }
 
                             return price < (decimal)min ? "Comprar" :

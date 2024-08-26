@@ -13,7 +13,7 @@ namespace ps_inoa
     internal class Alerter
     {
 
-        public void AlertaEmail(string configFile)
+        public void AlertaEmail(string configFile, string msg)
         {
             
             try
@@ -34,7 +34,7 @@ namespace ps_inoa
 
 
                 message.Subject = "MONITORADOR DE ATIVOS - ALERTA";
-                message.Body = "Toma";
+                message.Body = msg;
 
                 SmtpClient client = new SmtpClient();
                 // Credentials are necessary if the server requires the client
@@ -45,11 +45,13 @@ namespace ps_inoa
                 client.UseDefaultCredentials = false;
                 client.Credentials = new NetworkCredential(jsonUsername.ToString(), jsonPassword.ToString());
 
+                client.Send(message);
+
 
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao ler arquivo de configurações!");
+                throw new Exception(ex.Message);
             }
 
 
