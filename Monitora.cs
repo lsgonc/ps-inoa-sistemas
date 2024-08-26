@@ -14,10 +14,10 @@ namespace ps_inoa
         private readonly HttpClient httpClient = new HttpClient();
         private readonly Alerta alerta = new Alerta();
 
-        public async Task<string> MonitoraAtivo(string ativo, double minimo, double maximo)
+        public async Task MonitoraAtivo(string ativo, double minimo, double maximo)
         {
             var url = $"{UrlBase}query?function=GLOBAL_QUOTE&symbol={ativo}&apikey={ChaveApi}";
-            Console.WriteLine($"Buscando dados da API: {url}");
+            Console.WriteLine($"Buscando dados da API: {url}\n");
 
             try
             {
@@ -31,13 +31,13 @@ namespace ps_inoa
 
                     if (decimal.TryParse(precoString, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal preco))
                     {
-                        return ProcessarPrecoAtivo(preco, minimo, maximo);
+                        ProcessarPrecoAtivo(preco, minimo, maximo);
                     }
 
-                    return "Erro: Não foi possível converter o preço para um decimal!";
                 }
 
-                return "Erro: Não foi possível recuperar os dados do preço do ativo da API!";
+                Console.WriteLine("Erro ao ler dados da API. A resposta foi a seguinte: ");
+                Console.WriteLine(resposta.ToString() + "\n");
             }
             catch (Exception ex)
             {
@@ -53,11 +53,17 @@ namespace ps_inoa
 
             if (decisao == "Comprar")
             {
+                Console.WriteLine("O preço do ativo está baixo, você deve comprá-lo!");
                 alerta.EnviarAlertaEmail("smtp_configs.json", "O preço do ativo está baixo, você deve comprá-lo!");
             }
             else if (decisao == "Vender")
             {
+                Console.WriteLine("O preço do ativo está alto, você deve vendê-lo!");
                 alerta.EnviarAlertaEmail("smtp_configs.json", "O preço do ativo está alto, você deve vendê-lo!");
+            }
+            else
+            {
+                Console.WriteLine("O preço do ativo está entre os valores! Não faça nada");
             }
 
             return decisao;

@@ -9,6 +9,7 @@
    uma oportunidade de investimento. Por outro lado, se a cotação subir acima de um valor de referência, o sistema sugere a venda, 
    ajudando o usuário a maximizar seus ganhos.
 
+    Algumas das API's que foram analisadas para construção do app: Alpha Vantage, Yahoo Finance, B3    
 
 */
 
@@ -19,11 +20,12 @@ namespace ps_inoa
 {
     internal class Program
     {
-        private const int TotalCalls = 25; //Limite de chamadas diárias para a API Alpha Vantage
-        private const double IntervaloEmMinutos = 56.7; //Distribuição espaçada das 25 chamadas da API em um dia
+        private const double IntervaloEmMinutos = 30; //Chama a API de 30 em 30 minutos
 
         static async Task Main(string[] args)
         {
+            Console.WriteLine("===== Bem-vindo ao monitorador de ativos INOA =====\n");
+
             //Validando os argumentos do programa
             if (args.Length < 3)
             {
@@ -37,7 +39,7 @@ namespace ps_inoa
                 return;
             }
 
-            //Garante que os valores de venda e compra estão corretos
+            //Garante que os valores minimo e máximo estão certo, mesmo que o usuário passa-los em uma ordem diferente
             double min = Math.Min(value1, value2);
             double max = Math.Max(value1, value2);
 
@@ -46,17 +48,15 @@ namespace ps_inoa
             Monitoramento monitor = new Monitoramento();
             Alerta alertaEmail = new Alerta();
 
-            for (int i = 0; i < TotalCalls; i++)
-            {
-                var resultado = await monitor.MonitoraAtivo(args[0], min, max);
-                Console.WriteLine("Ação a ser tomada: " + resultado.ToLower());
+            while(true)
+            { 
+                await monitor.MonitoraAtivo(args[0], min, max);
+                
 
-                Console.WriteLine($"API call {i + 1}/{TotalCalls} concluída. Aguardando {IntervaloEmMinutos} minutos para chamar a API novamente.");
+                Console.WriteLine($"API call concluída. Aguardando {IntervaloEmMinutos} minutos para chamar a API novamente.");
 
-                if (i < TotalCalls - 1)
-                {
-                    await Task.Delay((int)Math.Ceiling(intervaloMilissegundos)); // Atraso em milissegundos
-                }
+                await Task.Delay((int)Math.Ceiling(intervaloMilissegundos)); // Atraso em milissegundos
+
             }
         }
     }
