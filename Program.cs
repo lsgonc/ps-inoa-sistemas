@@ -1,7 +1,7 @@
 ﻿/*
     Autor: Lucas Sciarra Gonçalves
 
-    Projeto desenvolvido para o processo seletivo da vaga de estágio da Inoa
+   Projeto desenvolvido para o processo seletivo da vaga de estágio da Inoa
 
    O aplicativo foi projetado para monitorar em tempo real a cotação de um ativo específico da B3, utilizando a API Alpha Vantage 
    para obter dados financeiros. Com base nos parâmetros definidos pelo usuário, o sistema analisa continuamente o preço 
@@ -12,58 +12,52 @@
 
 */
 
-
-
-using System.ComponentModel;
-using System.Globalization;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
+using System;
+using System.Threading.Tasks;
 
 namespace ps_inoa
 {
     internal class Program
     {
+        private const int TotalCalls = 25; //Limite de chamadas diárias para a API Alpha Vantage
+        private const double IntervaloEmMinutos = 56.7; //Distribuição espaçada das 25 chamadas da API em um dia
+
         static async Task Main(string[] args)
         {
-            //Numero limite de chamadas da API por DIA
-            int totalCalls = 25;
+            //Validando os argumentos do programa
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Uso: programa <ativo> <preco_venda> <preco_compra>");
+                return;
+            }
 
-            //Intervalo calculado entre cada chamda da API => 24h*60min/25calls = X minutos = X*60000 millisegundos
-            double intervalMilisseconds = 56.7 * 60000;
+            if (!double.TryParse(args[1], out double value1) || !double.TryParse(args[2], out double value2))
+            {
+                Console.WriteLine("Valores de mínimo e máximo devem ser números válidos.");
+                return;
+            }
+
+            //Garante que os valores de venda e compra estão corretos
+            double min = Math.Min(value1, value2);
+            double max = Math.Max(value1, value2);
+
+            double intervaloMilissegundos = IntervaloEmMinutos * 60000; // Convertendo minutos para milissegundos
 
             Monitoramento monitor = new Monitoramento();
             Alerta alertaEmail = new Alerta();
 
-            //Pega os valores minimo e maximo digitados pelo usuário como double
-            double value1 = double.Parse(args[1]);
-            double value2 = double.Parse(args[2]);
-
-            //Pega o minimo e o máximo, independete da orgem que o usuário digitar na hora de rodar o app
-            double min = Math.Min(value1, value2);
-            double max = Math.Max(value1, value2);
-
-            for (int i = 0; i < totalCalls; i++)
+            for (int i = 0; i < TotalCalls; i++)
             {
-                //Chama a função para monitorar o ativo escolhido
-                dynamic item = await monitor.MonitoraAtivo(args[0], min, max);
+                var resultado = await monitor.MonitoraAtivo(args[0], min, max);
+                Console.WriteLine("Ação a ser tomada: " + resultado.ToLower());
 
+                Console.WriteLine($"API call {i + 1}/{TotalCalls} concluída. Aguardando {IntervaloEmMinutos} minutos para chamar a API novamente.");
 
-                Console.WriteLine("Ação a ser tomada: " + item.ToLower() );
-
-                Console.WriteLine($"API call {i + 1}/{totalCalls} completed. Waiting for {intervalMilisseconds} minutes.");
-
-
-                if (i < totalCalls - 1)
+                if (i < TotalCalls - 1)
                 {
-                    await Task.Delay((int)Math.Ceiling(intervalMilisseconds)); //valor milisegundos;
+                    await Task.Delay((int)Math.Ceiling(intervaloMilissegundos)); // Atraso em milissegundos
                 }
-
-
             }
-
-
         }
-
     }
 }

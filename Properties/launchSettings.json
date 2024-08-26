@@ -2,7 +2,7 @@
   "profiles": {
     "ps-inoa": {
       "commandName": "Project",
-      "commandLineArgs": "PETR4.SA 39 36 \r\n"
+      "commandLineArgs": "PETR4.SA 40 39 \r\n"
     }
   }
 }
