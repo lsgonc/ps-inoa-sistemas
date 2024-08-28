@@ -9,7 +9,7 @@
    uma oportunidade de investimento. Por outro lado, se a cotação subir acima de um valor de referência, o sistema sugere a venda, 
    ajudando o usuário a maximizar seus ganhos.
 
-    Algumas das API's que foram analisadas para construção do app: Alpha Vantage, Yahoo Finance, B3    
+    Algumas das API's que foram analisadas para construção do app: Alpha Vantage, Yahoo Finance, HG Finance  
 
 */
 
@@ -46,7 +46,6 @@ namespace ps_inoa
             double intervaloMilissegundos = IntervaloEmMinutos * 60000; // Convertendo minutos para milissegundos
 
             Monitoramento monitor = new Monitoramento();
-            Alerta alertaEmail = new Alerta();
 
             while(true)
             { 
